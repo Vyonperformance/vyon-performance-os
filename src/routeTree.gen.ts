@@ -11,6 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ClientesRouteImport } from './routes/clientes'
+import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
+import { Route as EquipeRouteImport } from './routes/equipe'
+import { Route as FinanceiroRouteImport } from './routes/financeiro'
+import { Route as RelatoriosRouteImport } from './routes/relatorios'
+import { Route as TarefasRouteImport } from './routes/tarefas'
+import { Route as TrafegoRouteImport } from './routes/trafego'
 import { Route as ClientesIndexRouteImport } from './routes/clientes.index'
 import { Route as ClientesIdRouteImport } from './routes/clientes.$id'
 import { Route as ClientesNovoRouteImport } from './routes/clientes.novo'
@@ -23,6 +29,36 @@ const IndexRoute = IndexRouteImport.update({
 const ClientesRoute = ClientesRouteImport.update({
   id: '/clientes',
   path: '/clientes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EquipeRoute = EquipeRouteImport.update({
+  id: '/equipe',
+  path: '/equipe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FinanceiroRoute = FinanceiroRouteImport.update({
+  id: '/financeiro',
+  path: '/financeiro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RelatoriosRoute = RelatoriosRouteImport.update({
+  id: '/relatorios',
+  path: '/relatorios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TarefasRoute = TarefasRouteImport.update({
+  id: '/tarefas',
+  path: '/tarefas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrafegoRoute = TrafegoRouteImport.update({
+  id: '/trafego',
+  path: '/trafego',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ClientesIndexRoute = ClientesIndexRouteImport.update({
@@ -44,12 +80,24 @@ const ClientesNovoRoute = ClientesNovoRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/clientes': typeof ClientesRouteWithChildren
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/equipe': typeof EquipeRoute
+  '/financeiro': typeof FinanceiroRoute
+  '/relatorios': typeof RelatoriosRoute
+  '/tarefas': typeof TarefasRoute
+  '/trafego': typeof TrafegoRoute
   '/clientes/$id': typeof ClientesIdRoute
   '/clientes/novo': typeof ClientesNovoRoute
   '/clientes/': typeof ClientesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/equipe': typeof EquipeRoute
+  '/financeiro': typeof FinanceiroRoute
+  '/relatorios': typeof RelatoriosRoute
+  '/tarefas': typeof TarefasRoute
+  '/trafego': typeof TrafegoRoute
   '/clientes/$id': typeof ClientesIdRoute
   '/clientes/novo': typeof ClientesNovoRoute
   '/clientes': typeof ClientesIndexRoute
@@ -58,6 +106,12 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/clientes': typeof ClientesRouteWithChildren
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/equipe': typeof EquipeRoute
+  '/financeiro': typeof FinanceiroRoute
+  '/relatorios': typeof RelatoriosRoute
+  '/tarefas': typeof TarefasRoute
+  '/trafego': typeof TrafegoRoute
   '/clientes/$id': typeof ClientesIdRoute
   '/clientes/novo': typeof ClientesNovoRoute
   '/clientes/': typeof ClientesIndexRoute
@@ -65,13 +119,39 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/clientes' | '/clientes/$id' | '/clientes/novo' | '/clientes/'
+    | '/'
+    | '/clientes'
+    | '/configuracoes'
+    | '/equipe'
+    | '/financeiro'
+    | '/relatorios'
+    | '/tarefas'
+    | '/trafego'
+    | '/clientes/$id'
+    | '/clientes/novo'
+    | '/clientes/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/clientes/$id' | '/clientes/novo' | '/clientes'
+  to:
+    | '/'
+    | '/configuracoes'
+    | '/equipe'
+    | '/financeiro'
+    | '/relatorios'
+    | '/tarefas'
+    | '/trafego'
+    | '/clientes/$id'
+    | '/clientes/novo'
+    | '/clientes'
   id:
     | '__root__'
     | '/'
     | '/clientes'
+    | '/configuracoes'
+    | '/equipe'
+    | '/financeiro'
+    | '/relatorios'
+    | '/tarefas'
+    | '/trafego'
     | '/clientes/$id'
     | '/clientes/novo'
     | '/clientes/'
@@ -80,6 +160,12 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ClientesRoute: typeof ClientesRouteWithChildren
+  ConfiguracoesRoute: typeof ConfiguracoesRoute
+  EquipeRoute: typeof EquipeRoute
+  FinanceiroRoute: typeof FinanceiroRoute
+  RelatoriosRoute: typeof RelatoriosRoute
+  TarefasRoute: typeof TarefasRoute
+  TrafegoRoute: typeof TrafegoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -96,6 +182,48 @@ declare module '@tanstack/react-router' {
       path: '/clientes'
       fullPath: '/clientes'
       preLoaderRoute: typeof ClientesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracoes': {
+      id: '/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof ConfiguracoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/equipe': {
+      id: '/equipe'
+      path: '/equipe'
+      fullPath: '/equipe'
+      preLoaderRoute: typeof EquipeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/financeiro': {
+      id: '/financeiro'
+      path: '/financeiro'
+      fullPath: '/financeiro'
+      preLoaderRoute: typeof FinanceiroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/relatorios': {
+      id: '/relatorios'
+      path: '/relatorios'
+      fullPath: '/relatorios'
+      preLoaderRoute: typeof RelatoriosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tarefas': {
+      id: '/tarefas'
+      path: '/tarefas'
+      fullPath: '/tarefas'
+      preLoaderRoute: typeof TarefasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/trafego': {
+      id: '/trafego'
+      path: '/trafego'
+      fullPath: '/trafego'
+      preLoaderRoute: typeof TrafegoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/clientes/': {
@@ -141,6 +269,12 @@ const ClientesRouteWithChildren = ClientesRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ClientesRoute: ClientesRouteWithChildren,
+  ConfiguracoesRoute: ConfiguracoesRoute,
+  EquipeRoute: EquipeRoute,
+  FinanceiroRoute: FinanceiroRoute,
+  RelatoriosRoute: RelatoriosRoute,
+  TarefasRoute: TarefasRoute,
+  TrafegoRoute: TrafegoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
