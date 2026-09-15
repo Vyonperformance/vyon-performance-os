@@ -1,7 +1,7 @@
 export type Tone = "success" | "warning" | "danger" | "info" | "neutral";
 export const clients = [
  {id:"alpha",name:"Alphora Commerce",services:["Meta Ads","Google Ads"],manager:"João Silva",operational:"Ativo",financial:"Regular",entry:"02/06/2026",tone:"success" as Tone},
- {id:"beta",name:"Boreal Odonto",services:["Meta Ads"],manager:"Ana Prado",operational:"Onboarding",financial:"Pendente",entry:"14/08/2026",tone:"warning" as Tone},
+ {id:"beta",name:"Boreal Odonto",services:["Meta Ads"],manager:"Ana Prado",operational:"Aguardando ativação",financial:"Regular",entry:"14/08/2026",tone:"warning" as Tone},
  {id:"gamma",name:"Gamma Educação",services:["Google Ads","Landing Page"],manager:"Léo Martins",operational:"Ativo",financial:"Inadimplente",entry:"11/03/2026",tone:"danger" as Tone},
  {id:"delta",name:"Delta Saúde",services:["Meta Ads","TikTok Ads"],manager:"Marina Costa",operational:"Aguardando ativação",financial:"Pendente",entry:"01/09/2026",tone:"warning" as Tone},
  {id:"kora",name:"Kora Engenharia",services:["Google Ads","Site"],manager:"Júlia Reis",operational:"Ativo",financial:"Regular",entry:"19/01/2026",tone:"success" as Tone},
