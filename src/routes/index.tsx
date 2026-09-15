@@ -1,24 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
-
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
-export const Route = createFileRoute("/")({
-  component: Index,
-});
-
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
-}
+import { createFileRoute, Link } from "@tanstack/react-router"; import { ArrowRight } from "lucide-react"; import { attention, clients } from "@/data/mock"; import { MetricStrip, PageHeader, StatusBadge, TableShell } from "@/components/vyon/system"; import { Button } from "@/components/ui/button";
+export const Route=createFileRoute("/")({head:()=>({meta:[{title:"Dashboard — Vyon Performance OS"},{name:"description",content:"Visão executiva da operação da Vyon Performance."},{property:"og:title",content:"Dashboard — Vyon Performance OS"},{property:"og:description",content:"Visão executiva da operação da Vyon Performance."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}]}),component:Dashboard});
+function Dashboard(){return <><PageHeader title="Visão da operação" description="Terça, 15 de setembro · 5 itens requerem a sua atenção hoje." actions={<><Button variant="outline" size="sm">Exportar resumo</Button><Button size="sm">Gerar relatório</Button></>}/><MetricStrip items={[{label:"Clientes ativos",value:"18",note:"+2 no mês"},{label:"Em onboarding",value:"5",note:"2 aguardando acessos"},{label:"Recebido · Set",value:"R$ 214 mil",note:"12 de 15 cobrados"},{label:"Cobranças vencidas",value:"R$ 12,4 mil",note:"2 clientes",tone:"danger"},{label:"Tarefas · hoje",value:"9",note:"4 atrasadas",tone:"warning"},{label:"Relatórios pendentes",value:"3",note:"próx. 18/09"}]}/><div className="mt-6 grid gap-6 xl:grid-cols-12"><section className="xl:col-span-5"><Title text="Requer atenção" detail="5 itens"/><div className="divide-y divide-border rounded-lg border border-border bg-card">{attention.map(a=><Link to={a.to} key={a.title} className="flex items-start gap-3 px-4 py-3 hover:bg-accent"><span className={'mt-1.5 size-2 rounded-full '+(a.tone==='danger'?'bg-destructive':a.tone==='warning'?'bg-warning':'bg-info')}/><div className="min-w-0 flex-1"><p className="text-[13px] font-medium">{a.title}</p><p className="mt-0.5 text-xs text-muted-foreground">{a.detail}</p></div><span className="text-[11px] text-muted-foreground">{a.area}</span></Link>)}</div></section><section className="xl:col-span-7"><Title text="Clientes" detail={<Link to="/clientes" className="text-primary">Ver todos</Link>}/><TableShell><table className="data-table"><thead><tr><th>Cliente</th><th>Operacional</th><th>Financeiro</th><th className="text-right">Gestor</th></tr></thead><tbody>{clients.slice(0,5).map(c=><tr key={c.id}><td><Link to="/clientes/$id" params={{id:c.id}} className="font-medium hover:text-primary">{c.name}</Link></td><td><StatusBadge tone={c.tone}>{c.operational}</StatusBadge></td><td><StatusBadge tone={c.financial==='Regular'?'success':c.financial==='Inadimplente'?'danger':'warning'}>{c.financial}</StatusBadge></td><td className="text-right text-muted-foreground">{c.manager}</td></tr>)}</tbody></table></TableShell></section></div><section className="mt-6"><Title text="Contas de tráfego em observação" detail={<Link to="/trafego" className="flex items-center gap-1 text-primary">Abrir gestor <ArrowRight className="size-3"/></Link>}/><div className="grid overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 xl:grid-cols-4">{[["Gamma · Google Ads","R$ 8.200","1,4×","R$ 320","danger"],["Alphora · Meta Ads","R$ 15.600","3,8×","412 leads","success"],["Kora · TikTok Ads","R$ 6.400","2,6×","R$ 38 CPA","success"],["Delta · Meta Ads","—","Aguardando","6/8 acessos","warning"]].map(x=><div className="bg-card p-4" key={x[0]}><div className="flex justify-between"><b className="text-xs">{x[0]}</b><StatusBadge tone={x[4] as any}>{x[4]==='success'?'Saudável':'Atenção'}</StatusBadge></div><dl className="mt-3 space-y-1.5 text-xs"><div className="flex justify-between"><dt className="text-muted-foreground">Investimento</dt><dd>{x[1]}</dd></div><div className="flex justify-between"><dt className="text-muted-foreground">ROAS / Status</dt><dd>{x[2]}</dd></div><div className="flex justify-between"><dt className="text-muted-foreground">Sinal</dt><dd>{x[3]}</dd></div></dl></div>)}</div></section></>}; function Title({text,detail}:{text:string;detail:any}){return <div className="mb-3 flex items-center justify-between"><h2 className="text-sm font-semibold">{text}</h2><span className="text-xs text-muted-foreground">{detail}</span></div>}
