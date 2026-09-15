@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { Tone } from "@/data/mock";
 import { cn } from "@/lib/utils";
-const nav=[
+const nav: Array<{to: "/" | "/clientes" | "/financeiro" | "/trafego" | "/relatorios" | "/tarefas" | "/equipe" | "/configuracoes"; label:string; icon: typeof LayoutDashboard; group?:string}> = [
  {to:"/",label:"Dashboard",icon:LayoutDashboard,group:"Operação"}, {to:"/clientes",label:"Clientes",icon:BriefcaseBusiness}, {to:"/financeiro",label:"Financeiro",icon:CircleDollarSign}, {to:"/trafego",label:"Gestor de Tráfego",icon:ChartNoAxesCombined}, {to:"/relatorios",label:"Relatórios",icon:FileBarChart},
  {to:"/tarefas",label:"Gestão de Tarefas",icon:ClipboardCheck,group:"Gestão"}, {to:"/equipe",label:"Equipe",icon:Users}, {to:"/configuracoes",label:"Configurações",icon:Settings},
-] as const;
+];
 export function AppShell({children}:{children:ReactNode}){const [mobile,setMobile]=useState(false); const [notices,setNotices]=useState(false); const pathname=useRouterState({select:s=>s.location.pathname}); return <div className="min-h-screen bg-background text-foreground md:flex">
  <aside className={cn("fixed inset-y-0 left-0 z-40 flex w-60 flex-col border-r border-border bg-sidebar transition-transform md:sticky md:translate-x-0",mobile?"translate-x-0":"-translate-x-full")}>
   <div className="flex h-14 items-center border-b border-border px-4"><Link to="/" className="flex items-center gap-2.5"><span className="grid size-7 place-items-center rounded-md bg-primary text-xs font-bold text-primary-foreground">V</span><span><b className="block text-sm leading-none">Vyon</b><small className="mt-1 block text-[9px] uppercase text-muted-foreground">Performance OS</small></span></Link><Button variant="ghost" size="icon" className="ml-auto md:hidden" onClick={()=>setMobile(false)} aria-label="Fechar menu"><X/></Button></div>
