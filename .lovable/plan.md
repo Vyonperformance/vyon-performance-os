@@ -1,11 +1,18 @@
 # Vyon Performance OS — MVP visual navegável
 
 ## Objetivo
-Construir uma primeira versão exclusivamente visual, desktop-first e responsiva, com dados fictícios. A direção escolhida será **Signal Density**: interface sóbria, precisa, compacta e orientada a operação, sem excesso de cartões, sombras ou elementos decorativos.
+Construir uma primeira versão exclusivamente visual, desktop-first e responsiva, com dados fictícios. A direção escolhida será **Signal Density**: interface dark sóbria, precisa, compacta e orientada a operação, sem excesso de cartões, sombras ou elementos decorativos.
+
+## Identidade visual
+- Base dark sofisticada com preto principal `#0D0D0D` e grafite `#1A1A1A` nas superfícies.
+- Dourado institucional `#D4AF37` aplicado com moderação em seleção, foco e ações prioritárias; nunca como brilho, metal ou gradiente.
+- Off-white `#F2F2F2` nos textos principais; cinza médio `#555555` e cinza claro `#A7A7A7` em textos secundários, divisores e menor hierarquia.
+- Cores semânticas próprias para sucesso, alerta, erro e informação, sem competir com o dourado institucional.
+- Aparência de software B2B profissional de alta performance, com reconhecimento sutil da Vyon — não de peça publicitária ou produto de luxo.
 
 ## Entregas
 - Estrutura global com sidebar, cabeçalho contextual, busca, notificações e perfil.
-- Design system em tons neutros com verde institucional, tipografia Inter, estados semânticos e componentes reutilizáveis.
+- Design system dark com a paleta oficial da Vyon, tipografia Inter, estados semânticos e componentes reutilizáveis.
 - Dashboard executivo com indicadores compactos, lista “Requer atenção”, clientes e contas de mídia em observação.
 - Clientes: listagem com busca/filtros, cadastro manual em fluxo organizado e visão 360º com abas.
 - Visão do cliente: resumo, regra visual de ativação, onboarding, acessos, contratos, financeiro, campanhas, demandas/tarefas, relatórios, arquivos e histórico.
