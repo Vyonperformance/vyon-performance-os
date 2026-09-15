@@ -8,6 +8,9 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { SessionBoundary } from "@/modules/auth/session";
+import { NotConnected } from "@/modules/shared/states";
+import { useRouterState } from "@tanstack/react-router";
 import { AppShell } from "@/components/vyon/system";
 
 import appCss from "../styles.css?url";
@@ -85,7 +88,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "Sistema operacional interno da Vyon Performance." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      
     ],
     links: [
       {
@@ -95,7 +97,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      },
     ],
   }),
   shellComponent: RootShell,
@@ -106,7 +111,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <head>
         <HeadContent />
       </head>
@@ -123,8 +128,18 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <AppShell><Outlet /></AppShell> breaks all child routes. */}
-      <AppShell><Outlet /></AppShell>
+      {/* Session boundary gates operational routes; OperationalContent preserves the Outlet. */}
+      <SessionBoundary>
+        <AppShell>
+          <OperationalContent />
+        </AppShell>
+      </SessionBoundary>
     </QueryClientProvider>
   );
+}
+
+function OperationalContent() {
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const connected = path.startsWith("/clientes") || path === "/configuracoes" || path === "/equipe";
+  return connected ? <Outlet /> : <NotConnected />;
 }
