@@ -8,16 +8,20 @@ Os três arquivos originais foram revisados e enviados integralmente pelo conect
 
 | Arquivo no repositório | Versão registrada pelo conector no remoto |
 | --- | --- |
-| 202609150001_core.sql | 20260915184914 |
-| 202609150002_commands.sql | 20260915184938 |
-| 202609150003_permissions.sql | 20260915185007 |
+| 202609150001_core.sql | 202609150001 (reconciliado) |
+| 202609150002_commands.sql | 202609150002 (reconciliado) |
+| 202609150003_permissions.sql | 202609150003 (reconciliado) |
 | 20260915185218_restrict_rls_auto_enable_execute.sql | 20260915185322 |
 
-**Reconciliação de histórico pendente:** o conector gera versões com o horário da aplicação. A tentativa de alinhar os metadados aos identificadores locais foi rejeitada pela revisão automática por considerar a alteração persistente não aprovada e com risco de desincronização. A rejeição foi respeitada; não houve contorno nem alteração do histórico. Não executar `db push`/reaplicar estes arquivos antes de reconciliar explicitamente os registros. A futura correção deverá verificar os conteúdos aplicados e ajustar apenas metadados, com aprovação do usuário; não recriar tabelas.
+**Reconciliação das três migrations concluída após autorização explícita:** foram comparados os hashes MD5 do SQL integral local e do SQL registrado no remoto, além dos objetos já existentes. Os três conteúdos coincidiram. Em transação, foram alterados somente os campos `version` dos três registros autorizados, preservando nomes e SQL. Nenhuma migration foi reaplicada; nenhum objeto/schema foi recriado ou removido. Hashes antes/depois: core `0c7fd99d63f5535ea129e2dcca05dc3f`, commands `811ac55a0bbbea2dafa87ba129d999ed`, permissions `53018e2b39d10d3bb16e87ef042df9d1`.
+
+**Ainda pendente:** a quarta migration tem arquivo local `20260915185218_restrict_rls_auto_enable_execute.sql` e registro remoto `20260915185322`. Seu conteúdo também coincide (`8a25eb5515626149b65b22606d7aa1bd`), mas a autorização do usuário foi limitada às três originais. A quarta não foi alterada, renomeada ou reaplicada. Não executar `db push` antes de resolver essa divergência com autorização específica. O bloqueio automático anterior foi superado para as três originais pela nova autorização; não foi contornado.
 
 Somente as onze tabelas autorizadas existem em public: organizations, profiles, organization_memberships, departments, roles, permissions, role_permissions, clients, client_contacts, services, client_services. As tabelas internas de Auth/Storage/plataforma não são entidades de negócio criadas por esta etapa.
 
-Catálogo técnico: 20 permissões. Estado confirmado na retomada: zero usuários Auth e zero organizações. Bootstrap não executado; nenhum usuário/e-mail/UUID/senha fictício foi criado no remoto.
+Catálogo técnico: 20 permissões. Bootstrap executado por `private.bootstrap_vyon` com o UUID real informado pelo proprietário, após confirmar existência e e-mail confirmado em Auth. Criada organização **Vyon** (`aab7aca5-fae4-4295-a6d2-532ba89de463`), cargo **Administrador**, vínculo ativo/aceito com version 1 e todas as 20 permissões. Nenhuma senha ou conta fictícia foi criada.
+
+Após todos os testes e o rollback: um usuário Auth, uma organização; zero clientes, contatos, serviços e contratações. Vínculo administrativo permaneceu ativo, version 1, com 20 concessões.
 
 ## Verificações executadas
 
@@ -29,13 +33,19 @@ Catálogo técnico: 20 permissões. Estado confirmado na retomada: zero usuário
 - Advisor de segurança antes/depois da correção. O alerta anônimo de `rls_auto_enable()` desapareceu; EXECUTE anônimo confirmado false.
 - Reexecução local das quatro migrations em PGlite: 24 testes, 47 asserções, zero falhas. Nenhuma fixture desses testes foi enviada ao remoto.
 
-A validação estrutural das constraints não substitui os testes de escrita com usuários reais. Isolamento entre usuários/organizações, carteira atribuída, revogação de vínculo e concorrência por API permanecem pendentes de identidades reais autorizadas.
+### Testes positivos/negativos adicionais no PostgreSQL real
+
+Executado `supabase/tests/live_authorization.sql`, dentro de uma transação revertida, usando o usuário real fornecido. O executor assumiu `SET LOCAL ROLE authenticated`, com `auth.uid()` correspondente; foi verificado `current_user`, sem usar bypass de RLS para as chamadas sob teste. Setup e alterações temporárias de permissões/vínculo foram feitos como operador e revertidos integralmente.
+
+Passaram: leitura da organização e concessões; criação/leitura de catálogo, cliente, contato e contratação; status inicial activation_pending; atualização do cliente; incremento de versão; recusa de versão antiga; leitura global administrativa; carteira atribuída após retirada temporária de read_all; negação de leitura/alteração fora da carteira; isolamento de outra organização; recusa de FK e comando cruzados entre organizações; negação de escrita direta/version arbitrária; negação de alteração do próprio cargo/status; bootstrap negado ao papel autenticado; catálogo negado sem services.manage; leitura e criação negadas após desativação temporária do vínculo.
+
+Foi usada uma identidade real em estados de autorização diferentes; nenhuma segunda conta foi inventada. Os cenários passam pelo papel PostgreSQL e por auth.uid() reais, mas não exercitam emissão/verificação de JWT pelo GoTrue nem o login pelo browser. Não houve teste de exclusão ou UI administrativa além do escopo.
 
 ## Segurança e diferenças em relação ao PGlite
 
 O projeto hospedado já possuía `public.rls_auto_enable()`, ausente no harness PGlite. Seu EXECUTE estava concedido a anon/authenticated. Trata-se de função `RETURNS event_trigger`, e o alerta de grants não comprova por si só que pudesse ser explorada como RPC. A migration adicional revoga EXECUTE dos papéis públicos, preservando o event trigger. Não foi removida a proteção automática de RLS.
 
-Restam seis avisos do advisor para as RPCs autenticadas SECURITY DEFINER: accept_invitation, create_client, update_client, save_service, add_client_service e set_team_member. São endpoints intencionais, com autenticação/autorização dentro da função; não devem ser liberados a anon. A homologação positiva dessas regras com identidades reais ainda precisa ser concluída.
+Restam seis avisos do advisor para as RPCs autenticadas SECURITY DEFINER: accept_invitation, create_client, update_client, save_service, add_client_service e set_team_member. São endpoints intencionais, com autenticação/autorização dentro da função; não devem ser liberados a anon. Os comandos de cliente/catálogo e as principais negativas foram exercitados no PostgreSQL com a identidade real. Aceite de convite por e-mail e sessão de browser continuam fora da validação SQL.
 
 Referência do advisor: https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable
 
@@ -51,13 +61,12 @@ Grants e RLS foram verificados diretamente no PostgreSQL real. Não foi detectad
 
 O conjunto de ferramentas Supabase disponível não expõe leitura de logs de Postgres/Auth/API. Foram revisados os retornos SQL/migrations e os advisors, mas não foi possível inspecionar os logs completos do provedor. Não se afirma ausência de erros nesses logs. Essa inspeção permanece no painel do projeto.
 
-Login, renovação, logout, confirmação de convite e recuperação por e-mail não foram testados com usuário real. Nenhum e-mail foi enviado e nenhuma credencial foi inventada. `/auth/v1/settings` retornou 200: email habilitado, usuários anônimos desabilitados, confirmação de e-mail exigida e **disable_signup=false**. Portanto, o cadastro público está habilitado no remoto, divergindo do config.toml local. É necessário desabilitá-lo no painel para o modelo por convite. Um cadastro público não concede vínculo organizacional, mas essa configuração deve ser corrigida antes de liberar o ambiente. A ferramenta disponível não oferece alteração de configuração Auth; Site URL, redirects e SMTP ainda precisam ser conferidos no painel.
+Login, renovação, logout, confirmação de convite e recuperação por e-mail não foram testados pelo browser/GoTrue. Nenhum e-mail foi enviado e nenhuma credencial foi inventada. Nova consulta HTTP a `/auth/v1/settings` confirmou **disable_signup=true** e `mailer_autoconfirm=false`: cadastro público agora desabilitado e confirmação de e-mail exigida. Site URL, redirects e SMTP ainda precisam de homologação no ambiente da aplicação.
 
-## Ação necessária do proprietário
+## Bloqueios restantes para liberar merge
 
-1. No projeto correto, abrir **Authentication → Users** e criar/convidar seu usuário real com seu próprio e-mail. Escolher a senha diretamente no Supabase/fluxo de convite, sem enviá-la ao chat.
-2. Informar somente o UUID do usuário Auth que será o primeiro administrador (ou informar que foi criado para que possamos localizar e confirmar). A conta usada para entrar no painel Supabase não é automaticamente um usuário Auth da aplicação.
-3. Aprovar explicitamente a reconciliação dos registros de migration, após a divergência documentada acima. Até lá, não reaplicar migrations.
-4. Desabilitar novos cadastros públicos em Authentication, mantendo o fluxo administrativo de convite. Conferir URLs/templates/SMTP e configurar as duas variáveis públicas no ambiente de deployment; nenhuma secret/service_role é necessária no browser.
+1. Reconciliar a **quarta** migration, com autorização específica limitada a metadados. As três originais estão resolvidas; não reaplicar SQL.
+2. Concluir login, persistência/renovação de sessão, logout e recuperação no ambiente da aplicação conectado ao projeto real. UUID não é credencial de login; não solicitar senha pelo chat. Conferir URLs/templates/SMTP e variáveis públicas do deployment.
+3. Logs completos do provedor ainda dependem de inspeção pelo painel/ferramenta apropriada, conforme limitação acima.
 
-O helper `private.bootstrap_vyon` já está disponível. Será executado somente com o UUID real confirmado, para criar Vyon, cargo administrativo, concessões e vínculo. A implementação permite revisão de código, mas a homologação está **parcial** e o PR deve permanecer em rascunho, sem aprovação técnica final de merge, até concluir histórico, configuração Auth, bootstrap e testes reais.
+Não surgiu falha de autorização nos testes SQL desta rodada. A segurança de grants/RLS validada não equivale à aprovação ponta a ponta da autenticação. PR continua em rascunho, revisável, mas **ainda não liberado tecnicamente para merge** pelos itens 1 e 2. Sem merge em main e sem Etapa 5.
