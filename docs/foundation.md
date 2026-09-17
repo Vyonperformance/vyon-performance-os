@@ -1,5 +1,7 @@
 # Etapa 4 — fundação Supabase
 
+> Atualização: as migrations já foram aplicadas no projeto real. Consulte [homologação e bloqueios atuais](supabase-homologation.md) antes de qualquer aplicação adicional. As instruções e resultados abaixo descrevem a implementação inicial.
+
 Implementação restrita a Auth, organização/equipe, clientes, contatos, catálogo e serviços contratados. Não implementa ativação, contratos, cobranças, acessos, onboarding, tarefas, tráfego, relatórios, eventos, jobs ou Storage. Não aplicar em produção sem revisar as migrations e executar a homologação remota abaixo.
 
 ## Arquitetura
