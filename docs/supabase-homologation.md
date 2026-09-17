@@ -11,11 +11,11 @@ Os três arquivos originais foram revisados e enviados integralmente pelo conect
 | 202609150001_core.sql | 202609150001 (reconciliado) |
 | 202609150002_commands.sql | 202609150002 (reconciliado) |
 | 202609150003_permissions.sql | 202609150003 (reconciliado) |
-| 20260915185218_restrict_rls_auto_enable_execute.sql | 20260915185322 |
+| 20260915185218_restrict_rls_auto_enable_execute.sql | 20260915185218 (reconciliado) |
 
 **Reconciliação das três migrations concluída após autorização explícita:** foram comparados os hashes MD5 do SQL integral local e do SQL registrado no remoto, além dos objetos já existentes. Os três conteúdos coincidiram. Em transação, foram alterados somente os campos `version` dos três registros autorizados, preservando nomes e SQL. Nenhuma migration foi reaplicada; nenhum objeto/schema foi recriado ou removido. Hashes antes/depois: core `0c7fd99d63f5535ea129e2dcca05dc3f`, commands `811ac55a0bbbea2dafa87ba129d999ed`, permissions `53018e2b39d10d3bb16e87ef042df9d1`.
 
-**Ainda pendente:** a quarta migration tem arquivo local `20260915185218_restrict_rls_auto_enable_execute.sql` e registro remoto `20260915185322`. Seu conteúdo também coincide (`8a25eb5515626149b65b22606d7aa1bd`), mas a autorização do usuário foi limitada às três originais. A quarta não foi alterada, renomeada ou reaplicada. Não executar `db push` antes de resolver essa divergência com autorização específica. O bloqueio automático anterior foi superado para as três originais pela nova autorização; não foi contornado.
+**Quarta migration reconciliada após autorização específica:** antes da alteração, confirmado novamente MD5 local/remoto `8a25eb5515626149b65b22606d7aa1bd`, existência de `rls_auto_enable`, EXECUTE revogado para PUBLIC/anon/authenticated e event trigger `ensure_rls` habilitado. Alterado somente `version` de `20260915185322` para `20260915185218`, em transação com checagens de conteúdo. As quatro versões agora coincidem com os arquivos locais, com SQL preservado. Não houve reaplicação de SQL, mudança de schema, remoção ou reset.
 
 Somente as onze tabelas autorizadas existem em public: organizations, profiles, organization_memberships, departments, roles, permissions, role_permissions, clients, client_contacts, services, client_services. As tabelas internas de Auth/Storage/plataforma não são entidades de negócio criadas por esta etapa.
 
@@ -63,10 +63,43 @@ O conjunto de ferramentas Supabase disponível não expõe leitura de logs de Po
 
 Login, renovação, logout, confirmação de convite e recuperação por e-mail não foram testados pelo browser/GoTrue. Nenhum e-mail foi enviado e nenhuma credencial foi inventada. Nova consulta HTTP a `/auth/v1/settings` confirmou **disable_signup=true** e `mailer_autoconfirm=false`: cadastro público agora desabilitado e confirmação de e-mail exigida. Site URL, redirects e SMTP ainda precisam de homologação no ambiente da aplicação.
 
-## Bloqueios restantes para liberar merge
+## Homologação Auth pela aplicação — parada no login real
 
-1. Reconciliar a **quarta** migration, com autorização específica limitada a metadados. As três originais estão resolvidas; não reaplicar SQL.
-2. Concluir login, persistência/renovação de sessão, logout e recuperação no ambiente da aplicação conectado ao projeto real. UUID não é credencial de login; não solicitar senha pelo chat. Conferir URLs/templates/SMTP e variáveis públicas do deployment.
-3. Logs completos do provedor ainda dependem de inspeção pelo painel/ferramenta apropriada, conforme limitação acima.
+A reconciliação do histórico está encerrada. A autorização para testar login não inclui uma senha nem uma sessão do usuário no aplicativo. O usuário determinou expressamente parar caso fosse indispensável uma credencial indisponível, e essa condição foi respeitada: nenhuma senha foi solicitada, inventada, testada ou alterada. Nenhum link alternativo de acesso foi gerado para contornar o login por senha.
 
-Não surgiu falha de autorização nos testes SQL desta rodada. A segurança de grants/RLS validada não equivale à aprovação ponta a ponta da autenticação. PR continua em rascunho, revisável, mas **ainda não liberado tecnicamente para merge** pelos itens 1 e 2. Sem merge em main e sem Etapa 5.
+Nesta rodada foram inspecionados os fluxos existentes: signInWithPassword via server function; sessão validada por getUser; resolução de TeamMember/organização; cookies SSR; logout; pedido de recuperação com redirect para `origin + '/?recovery=1'`; callbacks PKCE e token_hash para invite/recovery. Inspeção de código NÃO é validação de execução desses fluxos.
+
+No checkout disponível não existem .env, .env.local ou .env.production, e as duas variáveis VITE não estão no ambiente do shell. Não foi confirmada uma URL de deployment desta branch. O link Lovable presente no README é do editor do projeto e não comprova deployment do código deste PR. Não se presume que configurar o plugin configure automaticamente o ambiente de execução da aplicação.
+
+### Ação do proprietário, sem compartilhar senha
+
+Usar um ambiente que execute a branch `feat/supabase-foundation` com servidor TanStack Start/Nitro. Se usar sua máquina, com Bun instalado:
+
+```sh
+git fetch origin
+git switch feat/supabase-foundation
+bun install --frozen-lockfile
+```
+
+Configurar `.env.local` (ignorado pelo Git):
+
+- `VITE_SUPABASE_URL=https://oqwuhqdwkugksrmrccoe.supabase.co`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`: copiar a chave **publishable** ativa desse projeto, no painel Supabase em API Keys. Não usar secret/service_role. Não precisa enviar a chave ao chat.
+
+Executar `bun run dev -- --host 127.0.0.1 --port 3000` e abrir `http://localhost:3000/clientes` no próprio computador. Em deployment, configurar as mesmas variáveis no ambiente de build e reconstruir; fornecer somente a URL da aplicação para confirmar sua origem e versão.
+
+Entrar pessoalmente na tela do Vyon com o e-mail e a senha do usuário Auth real já cadastrado. Não enviar senha, cookie, JWT ou URL contendo token. Informar somente o resultado e eventual mensagem de erro sem dados sensíveis. Se não houver aplicação acessível, informar isso antes de tentar login no painel Supabase: o painel não é a aplicação Vyon.
+
+### URLs e recuperação
+
+A Site URL remota deve ser a origem REAL escolhida para homologação da aplicação. Para o procedimento local acima, `http://localhost:3000`; redirects permitidos `http://localhost:3000/` e `http://localhost:3000/?recovery=1`. Em deployment, substituir pela origem HTTPS efetiva, que ainda não foi informada/confirmada. Não inventar domínio nem considerar esses valores locais já aplicados no remoto.
+
+Templates previstos: convite `{{ .SiteURL }}/?token_hash={{ .TokenHash }}&type=invite`; recuperação `{{ .SiteURL }}/?token_hash={{ .TokenHash }}&type=recovery`. SMTP deve usar o remetente/domínio e credenciais do provedor de e-mail do proprietário; nenhum desses valores foi fornecido ou verificado. Não foi confirmado defeito de SMTP: a configuração permanece não inspecionada.
+
+Depois de autenticar: conferir Vyon/Administrador, abrir Clientes/Equipe/Configurações, recarregar e reabrir a aplicação; testar renovação observável da sessão, sair e tentar retornar às rotas protegidas. Recuperação deve ser testada apenas até envio/recebimento/callback/tela de nova senha, sem salvar uma nova senha. Esses passos continuam pendentes; não foram declarados aprovados. Não é necessário criar dados permanentes para verificar as listas vazias.
+
+## Estado para merge
+
+**Ainda não liberado tecnicamente para merge.** O único bloqueio de histórico foi resolvido; resta homologar ponta a ponta Auth/sessão no aplicativo conectado, incluindo ambiente/URLs e recuperação. A indisponibilidade de senha é um limite de execução, não evidência de falha de segurança. Nenhuma nova falha de RLS foi encontrada. Logs completos do provedor seguem dependentes do painel/ferramenta apropriada.
+
+PR mantido em rascunho. Sem merge em main e sem Etapa 5.
