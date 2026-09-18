@@ -40,11 +40,11 @@ beforeAll(async () => {
 afterAll(async () => {
   await db?.close();
 });
-test("exactly 11 application tables", async () => {
+test("eleven core tables plus five integration tables", async () => {
   const r = await db.query(
     "select count(*)::int n from information_schema.tables where table_schema='public' and table_type='BASE TABLE'",
   );
-  expect(r.rows[0].n).toBe(11);
+  expect(r.rows[0].n).toBe(16);
 });
 test("anonymous cannot SELECT customers", async () => {
   await db.exec("begin; set local role anon");
