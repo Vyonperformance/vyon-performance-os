@@ -20,6 +20,10 @@ import { Route as TrafegoRouteImport } from './routes/trafego'
 import { Route as ClientesIndexRouteImport } from './routes/clientes.index'
 import { Route as ClientesIdRouteImport } from './routes/clientes.$id'
 import { Route as ClientesNovoRouteImport } from './routes/clientes.novo'
+import { Route as ApiV1ClientsRouteImport } from './routes/api.v1.clients'
+import { Route as ApiV1ServicesRouteImport } from './routes/api.v1.services'
+import { Route as ApiV1WebhooksRouteImport } from './routes/api.v1.webhooks'
+import { Route as ApiV1ClientsIdRouteImport } from './routes/api.v1.clients.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -76,6 +80,26 @@ const ClientesNovoRoute = ClientesNovoRouteImport.update({
   path: '/novo',
   getParentRoute: () => ClientesRoute,
 } as any)
+const ApiV1ClientsRoute = ApiV1ClientsRouteImport.update({
+  id: '/api/v1/clients',
+  path: '/api/v1/clients',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1ServicesRoute = ApiV1ServicesRouteImport.update({
+  id: '/api/v1/services',
+  path: '/api/v1/services',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1WebhooksRoute = ApiV1WebhooksRouteImport.update({
+  id: '/api/v1/webhooks',
+  path: '/api/v1/webhooks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1ClientsIdRoute = ApiV1ClientsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiV1ClientsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -89,6 +113,10 @@ export interface FileRoutesByFullPath {
   '/clientes/$id': typeof ClientesIdRoute
   '/clientes/novo': typeof ClientesNovoRoute
   '/clientes/': typeof ClientesIndexRoute
+  '/api/v1/clients': typeof ApiV1ClientsRouteWithChildren
+  '/api/v1/services': typeof ApiV1ServicesRoute
+  '/api/v1/webhooks': typeof ApiV1WebhooksRoute
+  '/api/v1/clients/$id': typeof ApiV1ClientsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -101,6 +129,10 @@ export interface FileRoutesByTo {
   '/clientes/$id': typeof ClientesIdRoute
   '/clientes/novo': typeof ClientesNovoRoute
   '/clientes': typeof ClientesIndexRoute
+  '/api/v1/clients': typeof ApiV1ClientsRouteWithChildren
+  '/api/v1/services': typeof ApiV1ServicesRoute
+  '/api/v1/webhooks': typeof ApiV1WebhooksRoute
+  '/api/v1/clients/$id': typeof ApiV1ClientsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -115,6 +147,10 @@ export interface FileRoutesById {
   '/clientes/$id': typeof ClientesIdRoute
   '/clientes/novo': typeof ClientesNovoRoute
   '/clientes/': typeof ClientesIndexRoute
+  '/api/v1/clients': typeof ApiV1ClientsRouteWithChildren
+  '/api/v1/services': typeof ApiV1ServicesRoute
+  '/api/v1/webhooks': typeof ApiV1WebhooksRoute
+  '/api/v1/clients/$id': typeof ApiV1ClientsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -130,6 +166,10 @@ export interface FileRouteTypes {
     | '/clientes/$id'
     | '/clientes/novo'
     | '/clientes/'
+    | '/api/v1/clients'
+    | '/api/v1/services'
+    | '/api/v1/webhooks'
+    | '/api/v1/clients/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -142,6 +182,10 @@ export interface FileRouteTypes {
     | '/clientes/$id'
     | '/clientes/novo'
     | '/clientes'
+    | '/api/v1/clients'
+    | '/api/v1/services'
+    | '/api/v1/webhooks'
+    | '/api/v1/clients/$id'
   id:
     | '__root__'
     | '/'
@@ -155,6 +199,10 @@ export interface FileRouteTypes {
     | '/clientes/$id'
     | '/clientes/novo'
     | '/clientes/'
+    | '/api/v1/clients'
+    | '/api/v1/services'
+    | '/api/v1/webhooks'
+    | '/api/v1/clients/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -166,6 +214,9 @@ export interface RootRouteChildren {
   RelatoriosRoute: typeof RelatoriosRoute
   TarefasRoute: typeof TarefasRoute
   TrafegoRoute: typeof TrafegoRoute
+  ApiV1ClientsRoute: typeof ApiV1ClientsRouteWithChildren
+  ApiV1ServicesRoute: typeof ApiV1ServicesRoute
+  ApiV1WebhooksRoute: typeof ApiV1WebhooksRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -247,6 +298,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClientesNovoRouteImport
       parentRoute: typeof ClientesRoute
     }
+    '/api/v1/clients': {
+      id: '/api/v1/clients'
+      path: '/api/v1/clients'
+      fullPath: '/api/v1/clients'
+      preLoaderRoute: typeof ApiV1ClientsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/services': {
+      id: '/api/v1/services'
+      path: '/api/v1/services'
+      fullPath: '/api/v1/services'
+      preLoaderRoute: typeof ApiV1ServicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/webhooks': {
+      id: '/api/v1/webhooks'
+      path: '/api/v1/webhooks'
+      fullPath: '/api/v1/webhooks'
+      preLoaderRoute: typeof ApiV1WebhooksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/clients/$id': {
+      id: '/api/v1/clients/$id'
+      path: '/$id'
+      fullPath: '/api/v1/clients/$id'
+      preLoaderRoute: typeof ApiV1ClientsIdRouteImport
+      parentRoute: typeof ApiV1ClientsRoute
+    }
   }
 }
 
@@ -266,6 +345,18 @@ const ClientesRouteWithChildren = ClientesRoute._addFileChildren(
   ClientesRouteChildren,
 )
 
+interface ApiV1ClientsRouteChildren {
+  ApiV1ClientsIdRoute: typeof ApiV1ClientsIdRoute
+}
+
+const ApiV1ClientsRouteChildren: ApiV1ClientsRouteChildren = {
+  ApiV1ClientsIdRoute: ApiV1ClientsIdRoute,
+}
+
+const ApiV1ClientsRouteWithChildren = ApiV1ClientsRoute._addFileChildren(
+  ApiV1ClientsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ClientesRoute: ClientesRouteWithChildren,
@@ -275,6 +366,9 @@ const rootRouteChildren: RootRouteChildren = {
   RelatoriosRoute: RelatoriosRoute,
   TarefasRoute: TarefasRoute,
   TrafegoRoute: TrafegoRoute,
+  ApiV1ClientsRoute: ApiV1ClientsRouteWithChildren,
+  ApiV1ServicesRoute: ApiV1ServicesRoute,
+  ApiV1WebhooksRoute: ApiV1WebhooksRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
