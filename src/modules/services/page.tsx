@@ -10,6 +10,7 @@ import { useTeamMember } from "../auth/session";
 import { serviceOptions, useSaveService } from "../shared/queries";
 import { serviceInput } from "../shared/schemas";
 import { AccessDenied, Loading, Failure, NotConnected, money } from "../shared/states";
+import { IntegrationsPanel } from "../integrations/page";
 export function SettingsPage() {
   const member = useTeamMember();
   const [tab, setTab] = useState("Serviços");
@@ -46,6 +47,8 @@ export function SettingsPage() {
         <section>
           {tab === "Organização" ? (
             <p className="text-sm">{member.organizationName}</p>
+          ) : tab === "Integrações" ? (
+            <IntegrationsPanel />
           ) : tab !== "Serviços" ? (
             <NotConnected />
           ) : !member.permissions.includes("services.read") ? (
