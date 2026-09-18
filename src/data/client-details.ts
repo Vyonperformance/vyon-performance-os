@@ -258,8 +258,8 @@ const beta: ClientDetail = {
 
 export const clientDetails: Record<string, ClientDetail> = { alpha, beta };
 
-export function getClientDetail(id: string): ClientDetail {
-  return clientDetails[id] ?? { ...beta, id, name: nameFor(id) };
+export function getClientDetail(id: string): ClientDetail | null {
+  return clientDetails[id] ?? null;
 }
 
 function nameFor(id: string) {

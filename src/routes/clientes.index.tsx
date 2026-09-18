@@ -1,2 +1,15 @@
-import { createFileRoute, Link } from "@tanstack/react-router"; import { MoreHorizontal, Plus } from "lucide-react"; import { clients } from "@/data/mock"; import { Filters, PageHeader, StatusBadge, TableShell } from "@/components/vyon/system"; import { Button } from "@/components/ui/button";
-export const Route=createFileRoute("/clientes/")({head:()=>({meta:[{title:"Clientes — Vyon Performance OS"},{name:"description",content:"Gestão visual dos clientes da Vyon Performance."},{property:"og:title",content:"Clientes — Vyon Performance OS"},{property:"og:description",content:"Gestão visual dos clientes da Vyon Performance."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}]}),component:Clients}); function Clients(){return <><PageHeader title="Clientes" description="6 clientes nesta visualização" actions={<Button asChild size="sm"><Link to="/clientes/novo"><Plus/>Novo cliente</Link></Button>}/><Filters search="Pesquisar cliente…"><select className="control"><option>Status operacional</option><option>Ativo</option><option>Onboarding</option></select><select className="control"><option>Gestor responsável</option><option>João Silva</option></select></Filters><TableShell><table className="data-table"><thead><tr><th>Cliente</th><th>Serviços</th><th>Gestor responsável</th><th>Status operacional</th><th>Status financeiro</th><th>Data de entrada</th><th></th></tr></thead><tbody>{clients.map(c=><tr key={c.id}><td><Link to="/clientes/$id" params={{id:c.id}} className="font-semibold hover:text-primary">{c.name}</Link></td><td className="text-muted-foreground">{c.services.join(" + ")}</td><td>{c.manager}</td><td><StatusBadge tone={c.tone}>{c.operational}</StatusBadge></td><td><StatusBadge tone={c.financial==='Regular'?'success':c.financial==='Inadimplente'?'danger':'warning'}>{c.financial}</StatusBadge></td><td className="text-muted-foreground">{c.entry}</td><td><Button variant="ghost" size="icon" aria-label={'Ações de '+c.name}><MoreHorizontal/></Button></td></tr>)}</tbody></table></TableShell><div className="mt-3 flex justify-between text-xs text-muted-foreground"><span>Mostrando 1–6 de 6</span><span>Página 1 de 1</span></div></>}
+import { createFileRoute } from "@tanstack/react-router";
+import { ClientsPage } from "@/modules/clients/pages";
+export const Route = createFileRoute("/clientes/")({
+  head: () => ({
+    meta: [
+      { title: "Clientes — Vyon Performance OS" },
+      { name: "description", content: "Gestão visual dos clientes da Vyon Performance." },
+      { property: "og:title", content: "Clientes — Vyon Performance OS" },
+      { property: "og:description", content: "Gestão visual dos clientes da Vyon Performance." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: ClientsPage,
+});

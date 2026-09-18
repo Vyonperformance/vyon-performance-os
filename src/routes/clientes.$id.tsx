@@ -1,1 +1,18 @@
-import { createFileRoute } from "@tanstack/react-router"; import { ClientProfile } from "@/components/vyon/client-profile"; export const Route=createFileRoute("/clientes/$id")({head:()=>({meta:[{title:"Visão 360º — Vyon Performance OS"},{name:"description",content:"Visão operacional completa do cliente."},{property:"og:title",content:"Visão 360º — Vyon Performance OS"},{property:"og:description",content:"Visão operacional completa do cliente."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}]}),component:()=> <ClientProfile id={Route.useParams().id}/>});
+import { createFileRoute } from "@tanstack/react-router";
+import { ClientDetailPage } from "@/modules/clients/pages";
+export const Route = createFileRoute("/clientes/$id")({
+  head: () => ({
+    meta: [
+      { title: "Visão 360º — Vyon Performance OS" },
+      { name: "description", content: "Visão operacional completa do cliente." },
+      { property: "og:title", content: "Visão 360º — Vyon Performance OS" },
+      { property: "og:description", content: "Visão operacional completa do cliente." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: Page,
+});
+function Page() {
+  return <ClientDetailPage id={Route.useParams().id} />;
+}

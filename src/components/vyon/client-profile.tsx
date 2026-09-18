@@ -15,6 +15,7 @@ type Tab = (typeof tabs)[number];
 export function ClientProfile({ id }: { id: string }) {
   const [tab, setTab] = useState<Tab>("Visão Geral");
   const c = getClientDetail(id);
+  if (!c) return <p>Cliente não encontrado.</p>;
   const active = c.gates.contract && c.gates.payment && c.gates.access;
 
   return (
