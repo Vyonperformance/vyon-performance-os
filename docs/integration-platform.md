@@ -1,5 +1,8 @@
 # Etapa 5 — plataforma genérica de integrações
 
+> Revisão final de segurança: consulte [achados, correções e parecer do PR #2](integration-security-review.md). A suíte atual tem 55 testes/150 asserções; os números abaixo registram a homologação inicial.
+
+
 Implementação em `feat/integration-platform`, baseada na Etapa 4 aprovada (`e65c3c6450b830ea4a10347316a9fb532dcab7c6`). Sem alterações diretas em main, sem merge automático e sem Etapa 6. Nenhuma dependência nova foi adicionada.
 
 ## Escopo e camadas
