@@ -515,3 +515,84 @@ test("operator homologation script passes locally and rolls back every fixture",
     await isolated.close();
   }
 }, 30000);
+
+test("encoded credentials in JSON cannot be persisted as domain fields", async () => {
+  const escaped = generated.key.replace(/^v/, "\\u0076");
+  const raw = '{"personType":"company","name":"' + escaped + '"}';
+  const response = await send("clients.create", undefined, { raw, event: randomUUID() });
+  expect(response.status).toBe(400);
+});
+
+test("credentials cannot be persisted in the idempotency header", async () => {
+  const response = await send(
+    "clients.create",
+    { personType: "company", name: "Safe name" },
+    { event: generated.key },
+  );
+  expect(response.status).toBe(400);
+});
+
+test("another key of the same integration retries the same event without a second effect", async () => {
+  const second = await issue();
+  const event = randomUUID();
+  const body = {
+    version: 1,
+    type: "client.create",
+    externalEventId: event,
+    data: { personType: "company", name: "Shared identity" },
+  };
+  const first = await (await send("webhooks.receive", body)).json();
+  const retry = await (await send("webhooks.receive", body, { key: second.key })).json();
+  expect(retry.data.id).toBe(first.data.id);
+  expect(retry.duplicate).toBe(true);
+  expect(
+    (await db.query("select count(*)::int n from public.clients where id=$1", [first.data.id]))
+      .rows[0].n,
+  ).toBe(1);
+});
+
+test("empty or unknown scopes are rejected by the database, not only the form", async () => {
+  await expect(issue(integration, [])).rejects.toThrow();
+  await expect(issue(integration, ["clients.delete"])).rejects.toThrow();
+});
+
+test("human cannot invoke machine command even when the key hash is known in the test", async () => {
+  await expect(
+    asUser(db, admin, "select public.integration_request($1,$2,$3,$4,null,$5)", [
+      keyId,
+      generated.hash,
+      "services.read",
+      {},
+      randomUUID(),
+    ]),
+  ).rejects.toThrow();
+});
+
+test("database errors and credential text never escape the HTTP error boundary", async () => {
+  const failingGateway: IntegrationGateway = {
+    lookup: async () => {
+      throw new Error("SQL stack " + generated.key + " " + generated.hash);
+    },
+    execute: gateway.execute,
+  };
+  const response = await handleIntegrationRequest(
+    new Request("https://vyon.example.test/api/v1/services", {
+      headers: { authorization: "Bearer " + generated.key },
+    }),
+    "services.read",
+    undefined,
+    () => failingGateway,
+  );
+  expect(response.status).toBe(503);
+  const text = await response.text();
+  expect(
+    text.includes(generated.key) || text.includes(generated.hash) || text.includes("SQL stack"),
+  ).toBe(false);
+});
+
+test("rejected encoded/header credentials leave no secret in business or technical records", async () => {
+  const rows = await db.query(
+    "select coalesce(jsonb_agg(v),'[]')::text value from (select to_jsonb(c) v from public.clients c union all select to_jsonb(w) from public.webhook_events w union all select to_jsonb(l) from public.integration_logs l union all select to_jsonb(k) from public.api_keys k) t",
+  );
+  expect(rows.rows[0].value.includes(generated.key)).toBe(false);
+});

@@ -12,6 +12,23 @@ class InputError extends Error {
     super(code);
   }
 }
+function containsCredential(value: unknown): boolean {
+  const pending: unknown[] = [value];
+  while (pending.length) {
+    const item = pending.pop();
+    if (
+      typeof item === "string" &&
+      /vyon_[a-f0-9]{24}\.[a-f0-9]{64}|sb_secret_|Bearer\s|eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\./i.test(
+        item,
+      )
+    )
+      return true;
+    if (item && typeof item === "object") {
+      for (const [key, child] of Object.entries(item)) pending.push(key, child);
+    }
+  }
+  return false;
+}
 async function readJson(request: Request): Promise<unknown> {
   if (!/^application\/json(?:;|$)/i.test(request.headers.get("content-type") ?? ""))
     throw new InputError(400, "invalid_request");
@@ -44,14 +61,10 @@ async function readJson(request: Request): Promise<unknown> {
   }
   try {
     const text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-    // Reject obvious embedded credentials before persistence, including unknown webhook bodies.
-    if (
-      /vyon_[a-f0-9]{24}\.[a-f0-9]{64}|sb_secret_|Bearer\s|eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\./i.test(
-        text,
-      )
-    )
-      throw new Error("secret");
-    return JSON.parse(text);
+    const parsed: unknown = JSON.parse(text);
+    // Inspect decoded values, not JSON source: Unicode escapes must not bypass rejection.
+    if (containsCredential(parsed)) throw new Error("secret");
+    return parsed;
   } catch {
     throw new InputError(400, "invalid_payload");
   }
@@ -102,6 +115,7 @@ export async function handleIntegrationRequest(
     } else {
       const raw = await readJson(request);
       const header = request.headers.get("idempotency-key");
+      if (containsCredential(header)) throw new InputError(400, "invalid_request");
       if (operation === "clients.create") {
         input = externalClient.parse(raw);
         externalId = eventId.parse(header);
