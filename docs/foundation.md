@@ -1,6 +1,6 @@
 # Etapa 4 — fundação Supabase
 
-> Atualização: as migrations já foram aplicadas no projeto real. Consulte [homologação e bloqueios atuais](supabase-homologation.md) antes de qualquer aplicação adicional. As instruções e resultados abaixo descrevem a implementação inicial.
+> Atualização: as quatro migrations estão aplicadas e reconciliadas no projeto real. A revisão final considera o PR #1 tecnicamente apto para merge; por decisão do proprietário, o E2E de Auth é uma pendência obrigatória do primeiro deploy. Consulte [homologação e revisão final](supabase-homologation.md) antes de qualquer aplicação adicional. As instruções e resultados abaixo descrevem a implementação inicial. Nenhum merge foi realizado.
 
 Implementação restrita a Auth, organização/equipe, clientes, contatos, catálogo e serviços contratados. Não implementa ativação, contratos, cobranças, acessos, onboarding, tarefas, tráfego, relatórios, eventos, jobs ou Storage. Não aplicar em produção sem revisar as migrations e executar a homologação remota abaixo.
 

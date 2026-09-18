@@ -63,7 +63,9 @@ O conjunto de ferramentas Supabase disponível não expõe leitura de logs de Po
 
 Login, renovação, logout, confirmação de convite e recuperação por e-mail não foram testados pelo browser/GoTrue. Nenhum e-mail foi enviado e nenhuma credencial foi inventada. Nova consulta HTTP a `/auth/v1/settings` confirmou **disable_signup=true** e `mailer_autoconfirm=false`: cadastro público agora desabilitado e confirmação de e-mail exigida. Site URL, redirects e SMTP ainda precisam de homologação no ambiente da aplicação.
 
-## Homologação Auth pela aplicação — parada no login real
+## Homologação Auth pela aplicação — pendência obrigatória do primeiro deploy
+
+Por decisão explícita do proprietário, a homologação E2E descrita abaixo foi postergada para o primeiro deploy. Ela não bloqueia mais o merge do PR #1. O registro da interrupção anterior é mantido para distinguir inspeção de código de execução real; nenhum desses fluxos foi declarado aprovado por essa decisão.
 
 A reconciliação do histórico está encerrada. A autorização para testar login não inclui uma senha nem uma sessão do usuário no aplicativo. O usuário determinou expressamente parar caso fosse indispensável uma credencial indisponível, e essa condição foi respeitada: nenhuma senha foi solicitada, inventada, testada ou alterada. Nenhum link alternativo de acesso foi gerado para contornar o login por senha.
 
@@ -100,6 +102,40 @@ Depois de autenticar: conferir Vyon/Administrador, abrir Clientes/Equipe/Configu
 
 ## Estado para merge
 
-**Ainda não liberado tecnicamente para merge.** O único bloqueio de histórico foi resolvido; resta homologar ponta a ponta Auth/sessão no aplicativo conectado, incluindo ambiente/URLs e recuperação. A indisponibilidade de senha é um limite de execução, não evidência de falha de segurança. Nenhuma nova falha de RLS foi encontrada. Logs completos do provedor seguem dependentes do painel/ferramenta apropriada.
+**PR #1 tecnicamente apto para merge**, considerando a decisão explícita do proprietário de postergar o E2E de Auth para o primeiro deploy. A revisão final não identificou outro bloqueador técnico ou de segurança no escopo da Etapa 4. Isso não declara os fluxos de browser homologados nem garante ausência de defeitos futuros.
+
+### Revisão final consolidada em 18/09/2026
+
+Revisado o diff completo da branch contra main: migrations, autorização, acesso a dados, sessão, telas, rotas, componentes compartilhados, configuração, dependências/lockfile, testes e documentação. Código revisado no commit `4c2ae0a91007ab927d0865ca1194d28a409ea25d`; a atualização final acrescenta somente documentação.
+
+| Verificação | Resultado |
+| --- | --- |
+| Histórico local/remoto | Quatro versões e quatro conteúdos SQL coincidentes pelos hashes registrados acima; nenhuma migration pendente, divergente ou extra. |
+| Núcleo implementado | Exatamente as onze tabelas autorizadas, todas com RLS. Nenhuma entidade funcional da Etapa 5 implementada. |
+| Grants/RPCs | Sem SELECT anônimo ou escrita direta autenticada; seis comandos públicos autenticados autorizam internamente. Bootstrap e trigger de profile não são executáveis pelo usuário da aplicação. |
+| SECURITY DEFINER | Funções de domínio com search_path vazio e referências qualificadas; função da plataforma restrita e com search_path fixo. Isolamento por organização e carteira preservado. |
+| Administrador | Usuário real `b501890b-4521-412d-b7a5-d0946b8ad48f`, profile existente, vínculo ativo/aceito na Vyon, cargo Administrador e vinte permissões. |
+| Auth remoto | Nova leitura HTTP de settings confirmou disable_signup=true e mailer_autoconfirm=false. |
+| Segredos | Varredura dos arquivos versionados e das adições no histórico do PR não encontrou credenciais, JWTs, senhas literais, chaves privadas ou tokens privilegiados. Nenhuma service_role é usada no frontend. Referências textuais a service_role são rejeições/documentação, não credenciais. |
+| Validações locais | Instalação com lockfile congelado, typecheck e build aprovados; 24 testes/47 asserções passaram. git diff --check sem erros. |
+| Escopo e regressões | Nenhuma alteração acidental ou regressão bloqueadora identificada. UI de módulos futuros preservada como legado, sem conexão operacional; telas fora do recorte mostram estado não conectado. |
+| main | Permanece em `6024c2911991cf066a7618260b918863836a1155`, sem alterações provenientes da Etapa 4. |
+
+Os testes positivos/negativos remotos descritos acima continuam sendo a evidência de autorização sob o papel authenticated. Nesta revisão foram reconferidos os catálogos/grants/bootstrap; não se apresenta uma nova execução de login ou JWT como concluída.
+
+### Observações não bloqueadoras
+
+- O lint global permanece com 293 erros e oito avisos, dívida preexistente de código/formatação; arquivos novos não apresentam erros de lint. Não se declara lint global aprovado. Build, typecheck e testes estão aprovados.
+- Nova consulta ao advisor manteve os seis avisos de RPCs SECURITY DEFINER intencionalmente autenticadas e também apontou proteção contra senhas vazadas desabilitada. Esse último item é endurecimento de configuração do Auth, não evidência de senha comprometida ou bypass de autorização. Não foi classificado como bloqueador de merge da fundação com cadastro público desabilitado; revisar sua habilitação no painel antes de ampliar o uso. Referência: [segurança de senhas no Supabase](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection).
+- As oportunidades de performance e a indisponibilidade de logs completos do provedor permanecem registradas nas seções anteriores. Não houve alteração de schema/configuração remota nesta revisão final.
+
+### Checklist obrigatório do primeiro deploy
+
+- Configurar as duas variáveis públicas do projeto e executar a versão da aplicação com servidor TanStack Start/Nitro.
+- Definir Site URL e redirects pela origem HTTPS real do deploy; conferir templates e entrega de e-mail/SMTP, sem inventar domínio ou credenciais.
+- O proprietário deve entrar pessoalmente com o administrador real, sem compartilhar senha; validar sessão, Profile/TeamMember, organização Vyon e acesso a Clientes/Equipe/Configurações.
+- Validar persistência e renovação da sessão; logout e negação de acesso sem sessão.
+- Validar recuperação até recebimento/callback/tela de nova senha, sem alterar a senha nesta homologação; conferir redirects e erros da aplicação/Auth.
+- Inspecionar logs do provedor durante esses fluxos e registrar os resultados. Corrigir qualquer falha antes de considerar o ambiente homologado para operação.
 
 PR mantido em rascunho. Sem merge em main e sem Etapa 5.
