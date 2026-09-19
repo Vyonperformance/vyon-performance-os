@@ -31,7 +31,7 @@ Não há logging explícito de headers/payloads/chaves nestes módulos; erros ex
 
 Rotação futura é compatível: várias chaves por integração, idempotência ligada à integração e revogação por chave. Não foi criado fluxo automático de rotação. Emitir outra chave e revogar a anterior já são operações independentes existentes.
 
-## 2. SUPABASE_SECRET_KEY e alternativa de menor privilégio
+## 2. VYON_SUPABASE_SECRET_KEY e alternativa de menor privilégio
 
 O nome identifica uma **Supabase secret API key moderna, prefixo sb_secret_**, e não uma publishable key, senha PostgreSQL ou uma API Key Vyon. Ela é funcionalmente privilegiada: resolve para o papel service_role, com BYPASSRLS e poderes de plataforma. O formato moderno não é o JWT legado chamado service_role, mas não tem menor autoridade por isso. Referência: [Supabase API keys](https://supabase.com/docs/guides/getting-started/api-keys).
 
@@ -43,7 +43,7 @@ O bridge não usa SELECT/UPDATE genérico, apenas as duas RPCs. A revogação de
 
 Alternativa materialmente mais restrita, documentada antes de qualquer mudança: papel PostgreSQL LOGIN dedicado ao runtime externo, sem BYPASSRLS, sem grants em tabelas e com EXECUTE somente nas duas funções controladas, por conexão TLS/pool. Reduz o alcance da credencial de transporte, mas exige configurar credencial de banco, driver/conectividade/pooling e uma nova migration de grants. Não é uma simples troca por chave pública. Não foi implementada: o desenho atual não apresenta bypass acessível ao emissor, e essa mudança deve ser avaliada com o ambiente de deployment, sem introduzir infraestrutura transversal nesta revisão. Publicar lookup/hash para anon para eliminar a secret key seria pior e foi descartado.
 
-Verificado no source e bundle compilado: nenhum leitor SUPABASE_SECRET_KEY em VITE_ ou browser; nenhum bridge/gerador/comparador criptográfico no bundle público. O código não imprime a variável nem a inclui em respostas. Nenhuma chave real foi lida/impressa nesta revisão. Não foi possível auditar telemetria externa ainda não configurada.
+Verificado no source e bundle compilado: nenhum leitor VYON_SUPABASE_SECRET_KEY em VITE_ ou browser; nenhum bridge/gerador/comparador criptográfico no bundle público. O código não imprime a variável nem a inclui em respostas. Nenhuma chave real foi lida/impressa nesta revisão. Não foi possível auditar telemetria externa ainda não configurada.
 
 ## 3. Caminho único de criação e deduplicação comercial
 
@@ -110,7 +110,7 @@ Corpos inválidos, encoding, tamanho e mensagens de validação não são reflet
 
 Mantidas: rate limiting completo, limites de tempo no proxy, política de retenção de eventos/logs, Auth E2E da Etapa 4, SMTP/redirects, proteção contra senhas vazadas, lint global preexistente, entrega outbound/filas e fornecedores específicos. Sem evidência de bypass de autorização causado por esses adiamentos nesta revisão. Rate limiting/telemetria segura são requisitos para exposição operacional ampla; não foram apresentados como já configurados.
 
-Configurar SUPABASE_URL e SUPABASE_SECRET_KEY no servidor do primeiro deploy, jamais VITE_. Validar então Auth, UI de emissão/cópia/revogação, HTTP positivo contra o projeto real, runtime criptográfico e logs/APM. Nenhuma senha do proprietário foi usada ou solicitada. Revisar também a alternativa de papel dedicado com base no deployment escolhido. Não implementada rotação automática.
+Configurar VYON_SUPABASE_URL e VYON_SUPABASE_SECRET_KEY no servidor do primeiro deploy, jamais VITE_. Validar então Auth, UI de emissão/cópia/revogação, HTTP positivo contra o projeto real, runtime criptográfico e logs/APM. Nenhuma senha do proprietário foi usada ou solicitada. Revisar também a alternativa de papel dedicado com base no deployment escolhido. Não implementada rotação automática.
 
 ## D. Testes e regressões
 
@@ -130,3 +130,9 @@ Exatamente as cinco tabelas técnicas autorizadas, além das onze da fundação;
 ## F. Parecer
 
 **PR #2 tecnicamente apto para merge após as correções**, com os limites de homologação acima explícitos. Mantido em draft conforme solicitado. Não foi realizado merge, não houve mudança em main e não foi iniciada a Etapa 6.
+
+## Configuração de hosting — Etapa 5.5
+
+`VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` são configuração pública do Supabase oficial (`oqwuhqdwkugksrmrccoe`), versionada exclusivamente no `.env` raiz para o build. `VYON_SUPABASE_URL` e `VYON_SUPABASE_SECRET_KEY` são configuração server-side do mesmo projeto; a secret privilegiada pertence somente ao runtime do bridge e nunca ao `.env` versionado, bundle, respostas ou logs. Variáveis `SUPABASE_*` eventualmente injetadas pelo Lovable não são utilizadas pela aplicação Vyon. Não há fallback: ausência de `VYON_*`, chave inválida ou divergência da URL pública mantém o erro controlado 503.
+
+Esta adaptação não configura secrets na plataforma, não publica a aplicação e não comprova a homologação E2E do hosting. As pendências anteriores permanecem.

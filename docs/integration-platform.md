@@ -103,7 +103,7 @@ RLS nas cinco tabelas. Humanos com integrations.manage podem ler integrações, 
 
 RPCs humanas: save_integration, issue_integration_key e revoke_integration_key, com private.require_permission e search_path vazio. RPCs de máquina: integration_key_lookup e integration_request, executáveis somente por service_role. Helpers/trigger privados não são executáveis pelos papéis da aplicação. Todas as funções privilegiadas usam nomes qualificados e search_path fixo.
 
-O backend precisa de uma Supabase secret key real, que mapeia para service_role e tem privilégios elevados na plataforma. Ela nunca pode usar prefixo VITE_ ou entrar no frontend. O bridge aceita somente `sb_secret_`, mantém sessão persistente/refresh desativados e verifica que SUPABASE_URL coincide com o projeto público configurado. Embora as tabelas desta etapa não concedam escrita direta a service_role, a secret key é credencial administrativa da plataforma e deve ser tratada como tal.
+O backend precisa de uma Supabase secret key real, que mapeia para service_role e tem privilégios elevados na plataforma. Ela nunca pode usar prefixo VITE_ ou entrar no frontend. O bridge aceita somente `sb_secret_`, mantém sessão persistente/refresh desativados e verifica que VYON_SUPABASE_URL coincide com o projeto público configurado. Embora as tabelas desta etapa não concedam escrita direta a service_role, a secret key é credencial administrativa da plataforma e deve ser tratada como tal.
 
 ## UI conectada
 
@@ -119,7 +119,7 @@ Configurações → Integrações: listar/criar/editar nome/categoria/status, at
 - Data API remota com chave publishable e sem sessão: as cinco tabelas e a RPC integration_key_lookup retornaram 401/42501, sem linhas ou hashes. Auth settings confirmou disable_signup=true.
 - Smoke HTTP via Vite local: as quatro rotas responderam 401/invalid_api_key sem credencial e com no-store. Não equivale a teste HTTP positivo com Supabase remoto.
 - Lint relevante: zero erros/avisos. Lint global permanece em 293 erros/oito avisos preexistentes, sem ampliação da dívida.
-- Diff inspecionado, quatro migrations originais intactas, ausência de credenciais detectadas na varredura dos arquivos. Bundle público sem SUPABASE_SECRET_KEY, lookup privilegiado ou gerador/comparador de secrets.
+- Diff inspecionado, quatro migrations originais intactas, ausência de credenciais detectadas na varredura dos arquivos. Bundle público sem VYON_SUPABASE_SECRET_KEY, lookup privilegiado ou gerador/comparador de secrets.
 
 ## Supabase real e reconciliação
 
@@ -140,7 +140,7 @@ Advisors remotos:
 
 ## Configuração manual e pendências
 
-No primeiro deploy, configurar no servidor `SUPABASE_URL=https://oqwuhqdwkugksrmrccoe.supabase.co` e `SUPABASE_SECRET_KEY` com uma secret key ativa desse mesmo projeto, obtida pelo proprietário no painel e inserida no cofre de secrets do deployment. Manter as duas variáveis públicas VITE já previstas. Não enviar segredo ao chat nem versioná-lo. Sem configuração, a API externa falha fechada com 503; não há fallback para mocks. A emissão/gestão humana utiliza a sessão e não precisa da secret key.
+No primeiro deploy, configurar no servidor `VYON_SUPABASE_URL=https://oqwuhqdwkugksrmrccoe.supabase.co` e `VYON_SUPABASE_SECRET_KEY` com uma secret key ativa desse mesmo projeto, obtida pelo proprietário no painel e inserida no cofre de secrets do deployment. Manter as duas variáveis públicas VITE já previstas. Não enviar segredo ao chat nem versioná-lo. Sem configuração, a API externa falha fechada com 503; não há fallback para mocks. A emissão/gestão humana utiliza a sessão e não precisa da secret key.
 
 Não foi disponibilizada uma secret key ao runtime deste ambiente. Portanto, HTTP positivo ponta a ponta com o Supabase real e UI autenticada permanecem para o deployment. O código do handler e as RPCs foram testados como descrito, sem apresentar isso como E2E completo.
 
@@ -153,3 +153,9 @@ Outbound, atualização de clientes por API, fornecedores, contratos/cobranças/
 ## Referências técnicas consultadas
 
 [Supabase API keys](https://supabase.com/docs/guides/getting-started/api-keys), [grants e Data API](https://supabase.com/docs/guides/api/securing-your-api), [TanStack Start server routes](https://tanstack.com/start/latest/docs/framework/react/guide/server-routes) e changelog do Supabase. A secret key é backend-only; o browser continua usando publishable key e sessão do usuário.
+
+## Configuração de hosting — Etapa 5.5
+
+`VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` são configuração pública do Supabase oficial (`oqwuhqdwkugksrmrccoe`), versionada exclusivamente no `.env` raiz para o build. `VYON_SUPABASE_URL` e `VYON_SUPABASE_SECRET_KEY` são configuração server-side do mesmo projeto; a secret privilegiada pertence somente ao runtime do bridge e nunca ao `.env` versionado, bundle, respostas ou logs. Variáveis `SUPABASE_*` eventualmente injetadas pelo Lovable não são utilizadas pela aplicação Vyon. Não há fallback: ausência de `VYON_*`, chave inválida ou divergência da URL pública mantém o erro controlado 503.
+
+Esta adaptação não configura secrets na plataforma, não publica a aplicação e não comprova a homologação E2E do hosting. As pendências anteriores permanecem.
