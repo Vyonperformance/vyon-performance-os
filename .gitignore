@@ -35,5 +35,7 @@ dist-ssr
 .env
 .env.*
 !.env.example
+# Only the root public build configuration may be committed.
+!/.env
 supabase/.temp/
 supabase/.branches/

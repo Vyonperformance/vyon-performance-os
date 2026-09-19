@@ -24,8 +24,8 @@ export class GatewayError extends Error {
   }
 }
 export function integrationGateway(): IntegrationGateway {
-  const url = process.env["SUPABASE_URL"];
-  const secret = process.env["SUPABASE_SECRET_KEY"];
+  const url = process.env["VYON_SUPABASE_URL"];
+  const secret = process.env["VYON_SUPABASE_SECRET_KEY"];
   if (!url || url !== supabaseConfig()?.url || !secret?.startsWith("sb_secret_"))
     throw new GatewayError(503, "integration_unavailable");
   const db = createClient(url, secret, {
